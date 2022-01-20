@@ -1,0 +1,49 @@
+/* :root {
+  --black: black;
+  --white: white;
+} */
+
+.body{
+  background-color:darkslategray
+}
+
+
+#board{
+  display: grid;
+  grid-template-columns: repeat(8,1fr);
+  width: 100%;
+
+}
+
+@media (min-width: 799px) {
+  #board{
+    width: 75%;
+  }
+}
+
+@media (min-width: 1024px) {
+  #board{
+    width: 48%;
+  }
+}
+
+.square{
+  width: 100%;
+  content: "";
+  display: inline-block;
+  height: 0;
+  padding-bottom: 100%;
+}
+
+.black{
+  background-color: rgb(131, 108, 79);
+  border-color: rgb(131, 108, 79);
+
+}
+.white{
+  background-color:floralwhite;
+  border-color: floralwhite;
+}
+.selected{
+  background-color: red;
+}
