@@ -2,11 +2,17 @@ import {Piece,Board} from "./app.js";
 
 let board = new Board()
 board.initializeBoard();
-
+board.squares[20+8*3]= new Piece("p")
+board.squares[20+8*3].color="black"
+let possibleMoves = [];
 let gameManager = {};
 let gameManagerProxy = new Proxy (gameManager,{
   set: function (target,key,value) {
     if (key == "selectedSquare" && !(target[key] === value)) {
+      possibleMoves.forEach(element => {
+        $("#"+element).removeClass("selected");
+        $("#"+element).off("click")
+      });
       let previousSquareObj = $("#"+target[key]);
       previousSquareObj.removeClass("border-warning");
       previousSquareObj.addClass("border-danger");
@@ -23,7 +29,15 @@ let gameManagerProxy = new Proxy (gameManager,{
       currentSquareObj.removeClass("border-danger");
       currentSquareObj.addClass("border-warning");
       currentSquareObj.off("mouseenter mouseleave");
-      checkMoves(currentSquareObj.attr("id"),currentSquareObj.children().attr("id"))
+      possibleMoves = board.checkPossibleMoves(currentSquareObj.attr("id"));
+      if (possibleMoves) {
+        possibleMoves.forEach(element => {
+          $("#"+element).addClass("selected");
+          $("#"+element).on("click",()=>{
+            console.log("valid square");
+          })
+        });
+      }
     }
     target[key]=value;
     return true
@@ -32,7 +46,6 @@ let gameManagerProxy = new Proxy (gameManager,{
 
 $(()=>{
   $("#renderButton").click(()=>{console.log(gameManagerProxy.selectedSquare)})
-  console.log(board);
   $("#startButton").fadeIn();
   $("#startButton").click(()=>{
     console.log("started")
@@ -50,6 +63,7 @@ function renderPieces(board){
   board.squares.forEach((element,i) => {
     if (element.type!="empty") {
       $("#"+i).children().replaceWith(`<img class="piece img-fluid position-absolute top-50 start-50 translate-middle" id="${element.type}" src="img/${element.type}${element.color}.png"></img>`)
+      $("#"+i).addClass(`${element.color}-piece`)
       $("#"+i).click(()=>{
         gameManagerProxy.selectedSquare = i;
       })
@@ -90,25 +104,3 @@ function createBoard(){
   }
 }
 
-function checkMoves(currentPosition,pieceType) {
-  
-  console.log("current position "+currentPosition);
-  console.log("pieceType "+pieceType);
-  let possibleMoves = []
-  let piece = board.squares[currentPosition];
-  switch (piece.type) {
-    case "p":
-      if (piece.color == "black") {
-        possibleMoves.push(parseInt(currentPosition)+8)
-        if (piece.moveCount == 0) {possibleMoves.push(parseInt(currentPosition)+16)}
-        console.log(possibleMoves);
-        possibleMoves.forEach(element => {
-          $("#"+element).addClass("selected");
-          $("#"+element).click(()=>{
-            // tryMove(element,currentPosition)
-          })
-        });
-      }
-      break;
-  }
-}
