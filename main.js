@@ -9,22 +9,8 @@ let gameManager = {};
 let gameManagerProxy = new Proxy (gameManager,{
   set: function (target,key,value) {
     if (key == "selectedSquare" && !(target[key] === value)) {
-      possibleMoves.forEach(element => {
-        $("#"+element).removeClass("selected");
-        $("#"+element).off("click")
-      });
-      let previousSquareObj = $("#"+target[key]);
-      previousSquareObj.removeClass("border-warning");
-      previousSquareObj.addClass("border-danger");
-      previousSquareObj.addClass("border-dark");
-      previousSquareObj.on({
-        mouseenter: function () {
-          previousSquareObj.removeClass("border-dark");
-        },
-        mouseleave: function () {
-          previousSquareObj.addClass("border-dark");
-        }
-      });
+      cleanPossibleMoves(possibleMoves)
+      cleanPreviousSelectedPieceSquare(target[key])
       let currentSquareObj=$("#"+value);
       currentSquareObj.removeClass("border-danger");
       currentSquareObj.addClass("border-warning");
@@ -32,10 +18,13 @@ let gameManagerProxy = new Proxy (gameManager,{
       possibleMoves = board.checkPossibleMoves(currentSquareObj.attr("id"));
       if (possibleMoves) {
         possibleMoves.forEach(element => {
-          $("#"+element).addClass("selected");
-          $("#"+element).on("click",()=>{
+          let square = $("#"+element);
+          square.addClass("selected");
+          square.on("click",()=>{
+            board.movePiece(square.attr("id"),currentSquareObj.attr("id"),gameManagerProxy);
+
             console.log("valid square");
-          })
+          });
         });
       }
     }
@@ -45,7 +34,7 @@ let gameManagerProxy = new Proxy (gameManager,{
 })
 
 $(()=>{
-  $("#renderButton").click(()=>{console.log(gameManagerProxy.selectedSquare)})
+  $("#renderButton").click(()=>{console.log($("#"+gameManagerProxy.selectedSquare))})
   $("#startButton").fadeIn();
   $("#startButton").click(()=>{
     console.log("started")
@@ -63,9 +52,10 @@ function renderPieces(board){
   board.squares.forEach((element,i) => {
     if (element.type!="empty") {
       $("#"+i).children().replaceWith(`<img class="piece img-fluid position-absolute top-50 start-50 translate-middle" id="${element.type}" src="img/${element.type}${element.color}.png"></img>`)
-      $("#"+i).addClass(`${element.color}-piece`)
       $("#"+i).click(()=>{
-        gameManagerProxy.selectedSquare = i;
+        if (board.checkTurn($("#"+i).attr("id"))) {
+          gameManagerProxy.selectedSquare = i;
+        }
       })
       $("#"+i).on({
         mouseenter: function () {
@@ -104,3 +94,24 @@ function createBoard(){
   }
 }
 
+function cleanPossibleMoves(possibleMoves){
+  possibleMoves.forEach(element => {
+    $("#"+element).removeClass("selected");
+    $("#"+element).off("click")
+  });
+}
+
+function cleanPreviousSelectedPieceSquare(previousSquareId){
+  let previousSquareObj = $("#"+previousSquareId);
+  previousSquareObj.removeClass("border-warning");
+  previousSquareObj.addClass("border-danger");
+  previousSquareObj.addClass("border-dark");
+  previousSquareObj.on({
+    mouseenter: function () {
+      previousSquareObj.removeClass("border-dark");
+    },
+    mouseleave: function () {
+      previousSquareObj.addClass("border-dark");
+    }
+  });
+}

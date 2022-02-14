@@ -7,17 +7,19 @@ export class Piece {
   this.moveCount=0;
   this.id=id;
   }
-
+  static emptyPiece(){
+    return new Piece("empty",-1)
+  }
 }
 
 export class Board {
   constructor(){
     let squareArray = new Array(64)
-    this.squares = squareArray.fill(new Piece("empty",-1)) 
+    this.squares = squareArray.fill(Piece.emptyPiece()) 
     this.blackPieces = 16;
     this.whitePieces = 16;
-    this.turnCount = 0;
-    }
+    this.turnCount = 1;
+  }
   initializeBoard(){
     for (let i = 0; i<65; i++) {
       if (i>15 && i<48)
@@ -90,6 +92,43 @@ export class Board {
   squareHasOpponentPiece(position,color){
     if (this.squares[position].type != "empty" && this.squares[position].color != color) {return true}
     else{return false}
+  }
+  checkTurn(currentPosition){
+    let piece = this.squares[currentPosition];
+    if((this.turnCount%2==0 && piece.color=="black")){
+      return true
+    }
+    if ((this.turnCount%2==1 && piece.color=="white")) {
+      return true
+    }
+    return false
+  }
+  movePiece(destination,origin,gameManagerProxy){
+    let auxPiece = this.squares[origin];
+    this.squares[origin] = Piece.emptyPiece();
+    this.squares[destination] = auxPiece;
+    console.log("origin");
+    console.log(origin);
+    $("#"+origin).removeClass("border-danger");
+    $("#"+origin).off("mouseenter mouseleave");
+    $("#"+origin).children().replaceWith(`<div></div>`);
+    gameManagerProxy.selectedSquare = destination;
+    this.turnCount++;
+    $("#"+destination).children().replaceWith(`<img class="piece img-fluid position-absolute top-50 start-50 translate-middle" id="${auxPiece.type}" src="img/${auxPiece.type}${auxPiece.color}.png"></img>`);
+    $("#"+destination).click(()=>{
+      if (this.checkTurn($("#"+destination).attr("id"))) {
+        gameManagerProxy.selectedSquare = destination;
+      }
+    })
+    $("#"+destination).on({
+      mouseenter: function () {
+        $("#"+destination).removeClass("border-dark");
+      },
+      mouseleave: function () {
+        $("#"+destination).addClass("border-dark");
+      }
+    });
+
   }
 }
 function addPiece(board,id,type) {
