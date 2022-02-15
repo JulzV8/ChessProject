@@ -23,7 +23,7 @@ let gameManagerProxy = new Proxy (gameManager,{
           square.on("click",()=>{
             board.movePiece(square.attr("id"),currentSquareObj.attr("id"),gameManagerProxy);
 
-            console.log("valid square");
+            console.log("validooooo square");
           });
         });
       }
